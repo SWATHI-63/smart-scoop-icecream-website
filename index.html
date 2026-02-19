@@ -13,6 +13,7 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="health-analysis.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -325,6 +326,7 @@
 <a href="#home">Home</a>
 <a href="about_us_page.html">About</a>
 <a href="#menu">Menu</a>
+<a href="#health-analysis">Health Analysis</a>
 <a href="#review-section">Review</a>
 <a href="blog.html">Blogs</a>
 <a href="privacy.html">Privacy Policy</a>
@@ -1041,6 +1043,185 @@ document.addEventListener('click', function (event) {
 
     
     <!-- Menu Section Ends Here -->
+
+<!-- Health Analysis Section Starts Here -->
+<section class="health-analysis-section" id="health-analysis">
+    <div class="health-analysis-container">
+        <h1 data-aos="fade-up">Health <span>Analysis</span></h1>
+        <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
+            Choose your health concern and discover which ice creams are best for you
+        </p>
+
+        <!-- Health Info Box -->
+        <div class="health-info-box" data-aos="fade-up" data-aos-delay="200">
+            <h3><i class="fas fa-heartbeat"></i> Smart Health Recommendations</h3>
+            <p>Our ingredient-based health analysis correlates nutritional data with medical patterns related to diabetes, allergies, and cardiovascular risks. Get personalized recommendations based on your health needs!</p>
+        </div>
+
+        <!-- Health Condition Selector -->
+        <div class="health-condition-selector" data-aos="fade-up" data-aos-delay="300">
+            <button class="condition-btn active" data-condition="diabetes" onclick="selectCondition('diabetes')">
+                <i class="fas fa-candy-cane"></i> Diabetes Friendly
+            </button>
+            <button class="condition-btn" data-condition="cardiovascular" onclick="selectCondition('cardiovascular')">
+                <i class="fas fa-heartbeat"></i> Heart Healthy
+            </button>
+            <button class="condition-btn" data-condition="lowcalorie" onclick="selectCondition('lowcalorie')">
+                <i class="fas fa-weight"></i> Low Calorie
+            </button>
+            <button class="condition-btn" data-condition="allergy" onclick="selectCondition('allergy')">
+                <i class="fas fa-exclamation-triangle"></i> Allergy Check
+            </button>
+        </div>
+
+        <!-- Allergy Filter Container (initially hidden) -->
+        <div class="allergy-filter-container" id="allergy-filter" style="display: none;" data-aos="fade-up" data-aos-delay="400">
+            <h3>Select Your Allergies</h3>
+            <div class="allergy-checkboxes">
+                <label class="allergy-checkbox">
+                    <input type="checkbox" value="dairy"> Dairy
+                </label>
+                <label class="allergy-checkbox">
+                    <input type="checkbox" value="nuts"> Nuts
+                </label>
+                <label class="allergy-checkbox">
+                    <input type="checkbox" value="soy"> Soy
+                </label>
+                <label class="allergy-checkbox">
+                    <input type="checkbox" value="eggs"> Eggs
+                </label>
+                <label class="allergy-checkbox">
+                    <input type="checkbox" value="gluten"> Gluten
+                </label>
+            </div>
+            <button class="analyze-btn" onclick="analyzeForAllergies()">Find Safe Options</button>
+        </div>
+
+        <!-- Results Container -->
+        <div class="health-results-container" id="health-results" data-aos="fade-up" data-aos-delay="500">
+            <div class="loading">Loading health data</div>
+        </div>
+    </div>
+</section>
+
+<script>
+    let selectedCondition = 'diabetes';
+
+    // Select health condition
+    function selectCondition(condition) {
+        selectedCondition = condition;
+        
+        // Update button states
+        document.querySelectorAll('.condition-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-condition="${condition}"]`).classList.add('active');
+
+        // Show/hide allergy filter
+        const allergyFilter = document.getElementById('allergy-filter');
+        if (condition === 'allergy') {
+            allergyFilter.style.display = 'block';
+            document.getElementById('health-results').innerHTML = '<p style="text-align: center; color: #666;">Select your allergies above to find safe options</p>';
+        } else {
+            allergyFilter.style.display = 'none';
+            showTopRecommendations(condition);
+        }
+    }
+
+    // Show top recommendations for selected condition
+    async function showTopRecommendations(condition) {
+        const resultsContainer = document.getElementById('health-results');
+        resultsContainer.innerHTML = '<div class="loading">Analyzing...</div>';
+
+        // Wait for health analyzer to load
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        if (!healthAnalyzer.healthData) {
+            resultsContainer.innerHTML = '<p class="error">Unable to load health data. Please refresh the page.</p>';
+            return;
+        }
+
+        const recommendations = healthAnalyzer.getTopRecommendations(condition, 6);
+        
+        let html = '';
+        recommendations.forEach((item, index) => {
+            const result = healthAnalyzer.analyzeForCondition(item.flavour, condition);
+            
+            if (!result.error) {
+                const scoreClass = result.score || 'safe';
+                html += `
+                    <div class="health-result ${scoreClass}" data-aos="zoom-in" data-aos-delay="${index * 50}">
+                        <div class="rank">#${index + 1}</div>
+                        <h4>${item.flavour}</h4>
+                        ${result.score ? `<p class="score-badge ${result.score}">${result.score.toUpperCase()}</p>` : ''}
+                        <p class="recommendation">${result.recommendation}</p>
+                        <div class="nutritional-summary">
+                            <span><strong>Calories:</strong> ${item.calories}</span>
+                            <span><strong>Fat:</strong> ${item.fat_g}g</span>
+                            <span><strong>Carbs:</strong> ${item.carb_g}g</span>
+                            <span><strong>Sugar:</strong> ${item.sugar_g}g</span>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        resultsContainer.innerHTML = html || '<p class="error">No recommendations available.</p>';
+    }
+
+    // Analyze for allergies
+    async function analyzeForAllergies() {
+        const checkboxes = document.querySelectorAll('.allergy-checkbox input:checked');
+        const selectedAllergies = Array.from(checkboxes).map(cb => cb.value);
+
+        if (selectedAllergies.length === 0) {
+            alert('Please select at least one allergy to check');
+            return;
+        }
+
+        const resultsContainer = document.getElementById('health-results');
+        resultsContainer.innerHTML = '<div class="loading">Analyzing...</div>';
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const safeOptions = healthAnalyzer.checkMultipleAllergens(selectedAllergies);
+
+        let html = '';
+        if (safeOptions.length === 0) {
+            html = `<p class="error">No ice creams found without these allergens: ${selectedAllergies.join(', ')}</p>`;
+        } else {
+            html = `<div style="grid-column: 1 / -1; text-align: center; padding: 20px; background: #d1fae5; border-radius: 10px; margin-bottom: 20px;">
+                        <h3 style="color: #047857;"><i class="fas fa-check-circle"></i> Found ${safeOptions.length} Safe Options!</h3>
+                        <p style="color: #065f46;">These ice creams do not contain: ${selectedAllergies.join(', ')}</p>
+                    </div>`;
+            
+            safeOptions.forEach((item, index) => {
+                html += `
+                    <div class="health-result safe" data-aos="zoom-in" data-aos-delay="${index * 50}">
+                        <h4>${item.flavour}</h4>
+                        <p class="score-badge excellent">SAFE</p>
+                        <p class="recommendation">This ice cream is free from your selected allergens!</p>
+                        <div class="nutritional-summary">
+                            <span><strong>Calories:</strong> ${item.calories}</span>
+                            <span><strong>Fat:</strong> ${item.fat_g}g</span>
+                            <span><strong>Sugar:</strong> ${item.sugar_g}g</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        resultsContainer.innerHTML = html;
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            showTopRecommendations('diabetes');
+        }, 1000);
+    });
+</script>
+<!-- Health Analysis Section Ends Here -->
 
 
 <!-- Blogs Section Starts Here -->
@@ -1827,6 +2008,9 @@ document.addEventListener('click', function (event) {
       <div class="gtranslate_wrapper"></div>
       <script>window.gtranslateSettings = {"default_language":"en","detect_browser_language":true,"wrapper_selector":".gtranslate_wrapper"}</script>
       <script src="https://cdn.gtranslate.net/widgets/latest/float.js" defer></script>
+      
+      <!-- Health Analysis Module -->
+      <script src="health-analysis.js"></script>
 </body>
 
 </html>
