@@ -1,0 +1,35 @@
+{
+  "healthData": [
+      {"id":1,"flavor_name":"Matcha Blast","category":"Premium","ingredients":"vanilla extract, wafer pieces, condensed milk, honey, cookie crumbs, sugar, milk","sugar_g_per_serving":23,"fat_g_per_serving":11,"calories_per_serving":228,"allergens":"Soy","health_risk":"High calorie dessert – consume moderately","description":"A delicious matcha blast ice cream with rich taste and smooth creamy texture."},
+      {"id":2,"flavor_name":"Blueberry Dream","category":"Exotic","ingredients":"corn syrup, roasted nuts, food coloring, brown sugar, butter, condensed milk, chocolate chips, cookie crumbs","sugar_g_per_serving":18,"fat_g_per_serving":15,"calories_per_serving":291,"allergens":"Soy","health_risk":"High calorie dessert – consume moderately","description":"A delicious blueberry dream ice cream with rich taste and smooth creamy texture."},
+      {"id":3,"flavor_name":"Lavender Delight","category":"Candy","ingredients":"food coloring, wafer pieces, chocolate chips, cream, milk, caramel syrup","sugar_g_per_serving":25,"fat_g_per_serving":20,"calories_per_serving":285,"allergens":"Milk","health_risk":"High sugar intake may increase risk of diabetes","description":"A delicious lavender delight ice cream with rich taste and smooth creamy texture."},
+      {"id":4,"flavor_name":"Passion Fruit Swirl","category":"Chocolate","ingredients":"condensed milk, roasted nuts, vanilla extract, sugar, milk","sugar_g_per_serving":23,"fat_g_per_serving":7,"calories_per_serving":229,"allergens":"Milk","health_risk":"Nut allergens may cause allergic reactions","description":"A delicious passion fruit swirl ice cream with rich taste and smooth creamy texture."},
+      {"id":5,"flavor_name":"White Chocolate Swirl","category":"Fruit","ingredients":"cookie crumbs, caramel syrup, sugar, fruit puree, chocolate chips","sugar_g_per_serving":29,"fat_g_per_serving":20,"calories_per_serving":209,"allergens":"Nuts","health_risk":"High sugar intake may increase risk of diabetes","description":"A delicious white chocolate swirl ice cream with rich taste and smooth creamy texture."},
+      // ... 515 more entries ...
+    ],
+  ],
+  "healthThresholds": {
+    "diabetes": {
+      "sugar_g": { "excellent": 10, "good": 15, "moderate": 20, "poor": 30 },
+      "carb_g": { "excellent": 15, "good": 20, "moderate": 25, "poor": 35 }
+    },
+    "cardiovascular": {
+      "fat_g": { "excellent": 5, "good": 10, "moderate": 15, "poor": 20 },
+      "calories": { "excellent": 120, "good": 180, "moderate": 240, "poor": 300 }
+    }
+  },
+  "recommendations": {
+    "diabetes": {
+      "excellent": "Great choice! Low in sugar and carbs.",
+      "good": "Good option with moderate sugar content.",
+      "moderate": "Consume in moderation due to higher sugar levels.",
+      "poor": "Not recommended for diabetics - high sugar content."
+    },
+    "cardiovascular": {
+      "excellent": "Heart-healthy choice! Low in fat and calories.",
+      "good": "Good option with moderate fat content.",
+      "moderate": "Okay occasionally, but watch your portions.",
+      "poor": "High in fat - limit consumption for heart health."
+    }
+  }
+}

@@ -7,7 +7,7 @@ class HealthAnalyzer {
 
     async loadHealthData() {
         try {
-            const response = await fetch('icecream-health-data.json');
+            const response = await fetch('icecream-health-data-large.json');
             this.healthData = await response.json();
         } catch (error) {
             console.error('Error loading health data:', error);
@@ -21,7 +21,7 @@ class HealthAnalyzer {
         }
 
         const iceCream = this.healthData.healthData.find(
-            item => item.flavour.toLowerCase() === flavour.toLowerCase()
+            item => item.flavor_name.toLowerCase() === flavour.toLowerCase()
         );
 
         if (!iceCream) {
@@ -37,38 +37,39 @@ class HealthAnalyzer {
             score = this.calculateCardiovascularScore(iceCream);
             recommendation = this.healthData.recommendations.cardiovascular[score];
         } else if (condition === 'allergy') {
+            // allergens is a string, split by comma and trim
+            const allergensArr = iceCream.allergens ? iceCream.allergens.split(',').map(a => a.trim()) : [];
             return {
-                allergens: iceCream.allergens,
-                recommendation: iceCream.allergens.length === 0 
+                allergens: allergensArr,
+                recommendation: allergensArr.length === 0 
                     ? 'No common allergens detected!' 
-                    : `Contains: ${iceCream.allergens.join(', ')}`
+                    : `Contains: ${allergensArr.join(', ')}`
             };
         }
 
         return {
-            flavour: iceCream.flavour,
+            flavour: iceCream.flavor_name,
             score: score,
             recommendation: recommendation,
             nutritionalInfo: {
-                calories: iceCream.calories,
-                fat: iceCream.fat_g,
-                carbs: iceCream.carb_g,
-                sugar: iceCream.sugar_g,
-                protein: iceCream.protein_g
-            }
+                calories: iceCream.calories_per_serving,
+                fat: iceCream.fat_g_per_serving,
+                sugar: iceCream.sugar_g_per_serving,
+                // carbs and protein not present in new dataset
+            },
+            details: iceCream
         };
     }
 
     calculateDiabetesScore(iceCream) {
         const thresholds = this.healthData.healthThresholds.diabetes;
-        const sugar = iceCream.sugar_g;
-        const carbs = iceCream.carb_g;
-
-        if (sugar <= thresholds.sugar_g.excellent && carbs <= thresholds.carb_g.excellent) {
+        const sugar = iceCream.sugar_g_per_serving;
+        // carbs not present, so only use sugar
+        if (sugar <= thresholds.sugar_g.excellent) {
             return 'excellent';
-        } else if (sugar <= thresholds.sugar_g.good && carbs <= thresholds.carb_g.good) {
+        } else if (sugar <= thresholds.sugar_g.good) {
             return 'good';
-        } else if (sugar <= thresholds.sugar_g.moderate && carbs <= thresholds.carb_g.moderate) {
+        } else if (sugar <= thresholds.sugar_g.moderate) {
             return 'moderate';
         } else {
             return 'poor';
@@ -77,9 +78,8 @@ class HealthAnalyzer {
 
     calculateCardiovascularScore(iceCream) {
         const thresholds = this.healthData.healthThresholds.cardiovascular;
-        const fat = iceCream.fat_g;
-        const calories = iceCream.calories;
-
+        const fat = iceCream.fat_g_per_serving;
+        const calories = iceCream.calories_per_serving;
         if (fat <= thresholds.fat_g.excellent && calories <= thresholds.calories.excellent) {
             return 'excellent';
         } else if (fat <= thresholds.fat_g.good && calories <= thresholds.calories.good) {
@@ -94,40 +94,42 @@ class HealthAnalyzer {
     // Get all safe options for a specific allergy
     getSafeOptions(allergen) {
         if (!this.healthData) return [];
-        
-        return this.healthData.healthData.filter(item => 
-            !item.allergens.includes(allergen.toLowerCase())
-        );
+        return this.healthData.healthData.filter(item => {
+            const allergensArr = item.allergens ? item.allergens.toLowerCase() : '';
+            return !allergensArr.includes(allergen.toLowerCase());
+        });
     }
 
     // Get top recommendations for a health condition
     getTopRecommendations(condition, limit = 5) {
         if (!this.healthData) return [];
-
         let sorted = [...this.healthData.healthData];
-
         if (condition === 'diabetes') {
-            sorted.sort((a, b) => (a.sugar_g + a.carb_g) - (b.sugar_g + b.carb_g));
+            sorted.sort((a, b) => a.sugar_g_per_serving - b.sugar_g_per_serving);
         } else if (condition === 'cardiovascular') {
-            sorted.sort((a, b) => (a.fat_g + a.calories/10) - (b.fat_g + b.calories/10));
-        } else if (condition === 'low-calorie') {
-            sorted.sort((a, b) => a.calories - b.calories);
+            sorted.sort((a, b) => a.fat_g_per_serving - b.fat_g_per_serving);
+        } else if (condition === 'lowcalorie' || condition === 'low-calorie') {
+            sorted.sort((a, b) => a.calories_per_serving - b.calories_per_serving);
         }
-
         return sorted.slice(0, limit);
     }
 
     // Check multiple allergens at once
     checkMultipleAllergens(allergens) {
         if (!this.healthData) return [];
-        
         const allergenList = allergens.map(a => a.toLowerCase());
-        
         return this.healthData.healthData.filter(item => {
-            return !item.allergens.some(allergen => 
-                allergenList.includes(allergen.toLowerCase())
-            );
+            const itemAllergens = item.allergens ? item.allergens.toLowerCase() : '';
+            return !allergenList.some(allergen => itemAllergens.includes(allergen));
         });
+    }
+
+    // New: Lookup by flavor name (exact or partial)
+    lookupByFlavorName(query) {
+        if (!this.healthData) return [];
+        const q = query.trim().toLowerCase();
+        if (!q) return [];
+        return this.healthData.healthData.filter(item => item.flavor_name.toLowerCase().includes(q));
     }
 }
 

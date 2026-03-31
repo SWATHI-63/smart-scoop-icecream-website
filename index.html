@@ -1097,10 +1097,64 @@ document.addEventListener('click', function (event) {
             <button class="analyze-btn" onclick="analyzeForAllergies()">Find Safe Options</button>
         </div>
 
+        <!-- User Lookup by Flavor Name -->
+        <div class="flavor-lookup-container" data-aos="fade-up" data-aos-delay="450" style="margin-top: 32px;">
+          <h3 style="margin-bottom: 10px;">Search Ice Cream by Flavor Name</h3>
+          <input type="text" id="flavor-lookup-input" placeholder="Enter flavor name..." style="padding: 8px; width: 300px; border-radius: 6px; border: 1px solid #ccc;">
+          <button class="analyze-btn" onclick="lookupFlavor()" style="margin-left: 8px;">Search</button>
+          <div id="flavor-lookup-results" style="margin-top: 18px;"></div>
+        </div>
+
         <!-- Results Container -->
         <div class="health-results-container" id="health-results" data-aos="fade-up" data-aos-delay="500">
-            <div class="loading">Loading health data</div>
+          <div class="loading">Loading health data</div>
         </div>
+
+      // User lookup by flavor name
+      function lookupFlavor() {
+        const input = document.getElementById('flavor-lookup-input');
+        const query = input.value.trim();
+        const resultsDiv = document.getElementById('flavor-lookup-results');
+        if (!query) {
+          resultsDiv.innerHTML = '<p style="color: #888;">Please enter a flavor name.</p>';
+          return;
+        }
+        if (!healthAnalyzer.healthData) {
+          resultsDiv.innerHTML = '<p class="error">Unable to load health data. Please refresh the page.</p>';
+          return;
+        }
+        const matches = healthAnalyzer.lookupByFlavorName(query);
+        if (matches.length === 0) {
+          resultsDiv.innerHTML = `<p class="error">No ice cream flavors found matching "${query}".</p>`;
+          return;
+        }
+        let html = '';
+        matches.forEach(item => {
+          html += `
+            <div class="health-result info" style="margin-bottom: 18px;">
+              <h4 style="margin-bottom: 4px;">${item.flavor_name}</h4>
+              <div style="font-size: 0.95em; color: #666; margin-bottom: 6px;">${item.category} | <span style="color: #b45309;">${item.health_risk}</span></div>
+              <div><strong>Ingredients:</strong> ${item.ingredients}</div>
+              <div><strong>Allergens:</strong> ${item.allergens || 'None'}</div>
+              <div><strong>Sugar:</strong> ${item.sugar_g_per_serving}g | <strong>Fat:</strong> ${item.fat_g_per_serving}g | <strong>Calories:</strong> ${item.calories_per_serving}</div>
+              <div style="margin-top: 4px; font-style: italic; color: #555;">${item.description}</div>
+            </div>
+          `;
+        });
+        resultsDiv.innerHTML = html;
+      }
+
+      // Allow Enter key to trigger search
+      document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('flavor-lookup-input');
+        if (input) {
+          input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+              lookupFlavor();
+            }
+          });
+        }
+      });
     </div>
 </section>
 
@@ -1142,30 +1196,26 @@ document.addEventListener('click', function (event) {
         }
 
         const recommendations = healthAnalyzer.getTopRecommendations(condition, 6);
-        
         let html = '';
         recommendations.forEach((item, index) => {
-            const result = healthAnalyzer.analyzeForCondition(item.flavour, condition);
-            
-            if (!result.error) {
-                const scoreClass = result.score || 'safe';
-                html += `
-                    <div class="health-result ${scoreClass}" data-aos="zoom-in" data-aos-delay="${index * 50}">
-                        <div class="rank">#${index + 1}</div>
-                        <h4>${item.flavour}</h4>
-                        ${result.score ? `<p class="score-badge ${result.score}">${result.score.toUpperCase()}</p>` : ''}
-                        <p class="recommendation">${result.recommendation}</p>
-                        <div class="nutritional-summary">
-                            <span><strong>Calories:</strong> ${item.calories}</span>
-                            <span><strong>Fat:</strong> ${item.fat_g}g</span>
-                            <span><strong>Carbs:</strong> ${item.carb_g}g</span>
-                            <span><strong>Sugar:</strong> ${item.sugar_g}g</span>
-                        </div>
-                    </div>
-                `;
-            }
+          const result = healthAnalyzer.analyzeForCondition(item.flavor_name, condition);
+          if (!result.error) {
+            const scoreClass = result.score || 'safe';
+            html += `
+              <div class="health-result ${scoreClass}" data-aos="zoom-in" data-aos-delay="${index * 50}">
+                <div class="rank">#${index + 1}</div>
+                <h4>${item.flavor_name}</h4>
+                ${result.score ? `<p class="score-badge ${result.score}">${result.score.toUpperCase()}</p>` : ''}
+                <p class="recommendation">${result.recommendation}</p>
+                <div class="nutritional-summary">
+                  <span><strong>Calories:</strong> ${item.calories_per_serving}</span>
+                  <span><strong>Fat:</strong> ${item.fat_g_per_serving}g</span>
+                  <span><strong>Sugar:</strong> ${item.sugar_g_per_serving}g</span>
+                </div>
+              </div>
+            `;
+          }
         });
-
         resultsContainer.innerHTML = html || '<p class="error">No recommendations available.</p>';
     }
 
@@ -1188,29 +1238,27 @@ document.addEventListener('click', function (event) {
 
         let html = '';
         if (safeOptions.length === 0) {
-            html = `<p class="error">No ice creams found without these allergens: ${selectedAllergies.join(', ')}</p>`;
+          html = `<p class="error">No ice creams found without these allergens: ${selectedAllergies.join(', ')}</p>`;
         } else {
-            html = `<div style="grid-column: 1 / -1; text-align: center; padding: 20px; background: #d1fae5; border-radius: 10px; margin-bottom: 20px;">
-                        <h3 style="color: #047857;"><i class="fas fa-check-circle"></i> Found ${safeOptions.length} Safe Options!</h3>
-                        <p style="color: #065f46;">These ice creams do not contain: ${selectedAllergies.join(', ')}</p>
-                    </div>`;
-            
-            safeOptions.forEach((item, index) => {
-                html += `
-                    <div class="health-result safe" data-aos="zoom-in" data-aos-delay="${index * 50}">
-                        <h4>${item.flavour}</h4>
-                        <p class="score-badge excellent">SAFE</p>
-                        <p class="recommendation">This ice cream is free from your selected allergens!</p>
-                        <div class="nutritional-summary">
-                            <span><strong>Calories:</strong> ${item.calories}</span>
-                            <span><strong>Fat:</strong> ${item.fat_g}g</span>
-                            <span><strong>Sugar:</strong> ${item.sugar_g}g</span>
-                        </div>
-                    </div>
-                `;
-            });
+          html = `<div style="grid-column: 1 / -1; text-align: center; padding: 20px; background: #d1fae5; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="color: #047857;"><i class="fas fa-check-circle"></i> Found ${safeOptions.length} Safe Options!</h3>
+                <p style="color: #065f46;">These ice creams do not contain: ${selectedAllergies.join(', ')}</p>
+              </div>`;
+          safeOptions.forEach((item, index) => {
+            html += `
+              <div class="health-result safe" data-aos="zoom-in" data-aos-delay="${index * 50}">
+                <h4>${item.flavor_name}</h4>
+                <p class="score-badge excellent">SAFE</p>
+                <p class="recommendation">This ice cream is free from your selected allergens!</p>
+                <div class="nutritional-summary">
+                  <span><strong>Calories:</strong> ${item.calories_per_serving}</span>
+                  <span><strong>Fat:</strong> ${item.fat_g_per_serving}g</span>
+                  <span><strong>Sugar:</strong> ${item.sugar_g_per_serving}g</span>
+                </div>
+              </div>
+            `;
+          });
         }
-
         resultsContainer.innerHTML = html;
     }
 
