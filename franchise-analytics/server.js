@@ -67,7 +67,8 @@ app.post("/api/franchises", async (req, res, next) => {
 
     if (!franchiseName || !city || !openingDate || !initialInvestment) {
       return res.status(400).json({
-        message: "franchiseName, city, openingDate and initialInvestment are required.",
+        message:
+          "franchiseName, city, openingDate and initialInvestment are required.",
       });
     }
 
@@ -187,7 +188,12 @@ app.post("/api/franchises/:id/sales", async (req, res, next) => {
         )
         VALUES ($1, $2, $3, $4)
       `,
-        [franchiseId, transactionDate, Number(amount), Number(customerCount || 0)],
+        [
+          franchiseId,
+          transactionDate,
+          Number(amount),
+          Number(customerCount || 0),
+        ],
       );
 
       await upsertMetricForMonth(client, franchiseId, transactionDate);
@@ -306,7 +312,9 @@ async function startServer() {
   try {
     await verifyConnection();
     app.listen(port, () => {
-      console.log(`Franchise analytics module running on http://localhost:${port}`);
+      console.log(
+        `Franchise analytics module running on http://localhost:${port}`,
+      );
     });
   } catch (error) {
     console.error("Unable to connect to database:", error);

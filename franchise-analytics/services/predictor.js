@@ -108,8 +108,16 @@ function calculateSuccessProbability(input, predictedProfit) {
   const trafficSignal = clamp(Number(input.footTraffic || 0) / 18000, 0, 1.2);
   const incomeSignal = clamp(Number(input.averageIncome || 0) / 70000, 0, 1.2);
   const rentPenalty = clamp(Number(input.rentCost || 0) / 180000, 0, 1.2);
-  const competitionPenalty = clamp(Number(input.competitorCount || 0) / 12, 0, 1.2);
-  const nearbySignal = clamp(Number(input.nearbyPerformance || 0) / 200000, -1, 1.2);
+  const competitionPenalty = clamp(
+    Number(input.competitorCount || 0) / 12,
+    0,
+    1.2,
+  );
+  const nearbySignal = clamp(
+    Number(input.nearbyPerformance || 0) / 200000,
+    -1,
+    1.2,
+  );
 
   const score =
     1.5 * profitSignal +
@@ -152,11 +160,17 @@ function baselinePrediction(input, trainingRows) {
   const rentFactor = Number(input.rentCost || 0) / 120000;
   const incomeFactor = Number(input.averageIncome || 0) / 50000;
   const competitorPenalty = Number(input.competitorCount || 0) * 0.06;
-  const nearbyFactor = Number(input.nearbyPerformance || averageProfit) / 120000;
+  const nearbyFactor =
+    Number(input.nearbyPerformance || averageProfit) / 120000;
 
   const weighted =
     averageProfit *
-    (0.55 + 0.2 * trafficFactor + 0.14 * incomeFactor + 0.11 * nearbyFactor - competitorPenalty - 0.08 * rentFactor);
+    (0.55 +
+      0.2 * trafficFactor +
+      0.14 * incomeFactor +
+      0.11 * nearbyFactor -
+      competitorPenalty -
+      0.08 * rentFactor);
 
   return Math.max(weighted, 10000);
 }
@@ -195,7 +209,9 @@ export async function predictExpansion(candidates = []) {
 
     if (model) {
       const prediction = model.predict(normalizeFeatures(candidateWithNearby));
-      predictedProfit = denormalizeProfit(Array.isArray(prediction) ? prediction[0] : prediction);
+      predictedProfit = denormalizeProfit(
+        Array.isArray(prediction) ? prediction[0] : prediction,
+      );
     } else {
       predictedProfit = baselinePrediction(candidateWithNearby, trainingRows);
     }
@@ -223,7 +239,9 @@ export async function predictExpansion(candidates = []) {
     };
   });
 
-  return predictions.sort((a, b) => b.successProbability - a.successProbability);
+  return predictions.sort(
+    (a, b) => b.successProbability - a.successProbability,
+  );
 }
 
 export async function getTopExpansionRecommendations(limit = 3) {

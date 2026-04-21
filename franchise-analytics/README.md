@@ -66,7 +66,6 @@ npm run dev
 
 6. Open dashboard:
 
-
 - http://localhost:4000
 
 7. (Optional) Stop Docker database:
@@ -91,4 +90,3 @@ npm run db:docker:down
 The recommendation engine returns suggestions like:
 
 > Opening a franchise in Pune has an estimated success probability of 82% with expected monthly profit of INR 150,000.
-

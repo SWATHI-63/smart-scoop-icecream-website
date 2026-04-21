@@ -165,20 +165,27 @@ function App() {
     setLoading(true);
     setError("");
     try {
-      const [dashboardRes, overviewRes, chartsRes, recommendationRes] = await Promise.all([
-        apiRequest("/api/franchises/dashboard"),
-        apiRequest("/api/analytics/overview"),
-        apiRequest("/api/analytics/charts"),
-        apiRequest("/api/expansion/recommendations"),
-      ]);
+      const [dashboardRes, overviewRes, chartsRes, recommendationRes] =
+        await Promise.all([
+          apiRequest("/api/franchises/dashboard"),
+          apiRequest("/api/analytics/overview"),
+          apiRequest("/api/analytics/charts"),
+          apiRequest("/api/expansion/recommendations"),
+        ]);
 
       setDashboard(dashboardRes);
       setOverview(overviewRes);
       setCharts(chartsRes);
       setRecommendations(recommendationRes);
       if (!salesInput.franchiseId && dashboardRes.length) {
-        setSalesInput((prev) => ({ ...prev, franchiseId: String(dashboardRes[0].id) }));
-        setExpenseInput((prev) => ({ ...prev, franchiseId: String(dashboardRes[0].id) }));
+        setSalesInput((prev) => ({
+          ...prev,
+          franchiseId: String(dashboardRes[0].id),
+        }));
+        setExpenseInput((prev) => ({
+          ...prev,
+          franchiseId: String(dashboardRes[0].id),
+        }));
       }
     } catch (apiError) {
       setError(apiError.message);
@@ -422,8 +429,8 @@ function App() {
         <div className="brand">
           <h1>Franchise Profit and Expansion Intelligence</h1>
           <p>
-            Multi-franchise P&L dashboard with ROI analytics, trend tracking, and
-            AI-driven location recommendations.
+            Multi-franchise P&L dashboard with ROI analytics, trend tracking,
+            and AI-driven location recommendations.
           </p>
         </div>
         <button className="ghost" onClick={loadData}>
@@ -462,7 +469,9 @@ function App() {
                   <tr key={branch.id}>
                     <td>{branch.franchise_name}</td>
                     <td>{branch.city}</td>
-                    <td>{new Date(branch.opening_date).toLocaleDateString()}</td>
+                    <td>
+                      {new Date(branch.opening_date).toLocaleDateString()}
+                    </td>
                     <td>{formatCurrency(branch.monthly_revenue)}</td>
                     <td>{formatCurrency(branch.monthly_expenses)}</td>
                     <td>{formatCurrency(branch.monthly_profit)}</td>
@@ -499,7 +508,10 @@ function App() {
                 <input
                   value={newFranchise.city}
                   onChange={(e) =>
-                    setNewFranchise((prev) => ({ ...prev, city: e.target.value }))
+                    setNewFranchise((prev) => ({
+                      ...prev,
+                      city: e.target.value,
+                    }))
                   }
                   required
                 />
@@ -538,7 +550,10 @@ function App() {
                   type="number"
                   value={newFranchise.rentCost}
                   onChange={(e) =>
-                    setNewFranchise((prev) => ({ ...prev, rentCost: e.target.value }))
+                    setNewFranchise((prev) => ({
+                      ...prev,
+                      rentCost: e.target.value,
+                    }))
                   }
                 />
               </label>
@@ -673,7 +688,10 @@ function App() {
                   type="number"
                   value={salesInput.amount}
                   onChange={(e) =>
-                    setSalesInput((prev) => ({ ...prev, amount: e.target.value }))
+                    setSalesInput((prev) => ({
+                      ...prev,
+                      amount: e.target.value,
+                    }))
                   }
                   required
                 />
@@ -754,7 +772,10 @@ function App() {
                   type="number"
                   value={expenseInput.amount}
                   onChange={(e) =>
-                    setExpenseInput((prev) => ({ ...prev, amount: e.target.value }))
+                    setExpenseInput((prev) => ({
+                      ...prev,
+                      amount: e.target.value,
+                    }))
                   }
                   required
                 />
@@ -777,7 +798,10 @@ function App() {
                 <input
                   value={predictionInput.city}
                   onChange={(e) =>
-                    setPredictionInput((prev) => ({ ...prev, city: e.target.value }))
+                    setPredictionInput((prev) => ({
+                      ...prev,
+                      city: e.target.value,
+                    }))
                   }
                   required
                 />
@@ -874,7 +898,10 @@ function App() {
             </form>
 
             {manualPrediction ? (
-              <div className="recommendation-item" style={{ marginTop: "12px" }}>
+              <div
+                className="recommendation-item"
+                style={{ marginTop: "12px" }}
+              >
                 <h4>{manualPrediction.city}</h4>
                 <p>{manualPrediction.recommendation}</p>
               </div>

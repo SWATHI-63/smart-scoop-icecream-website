@@ -21,8 +21,7 @@ body {
   font-family: "DM Sans", sans-serif;
   background:
     radial-gradient(circle at 8% 10%, #dbeaff 0%, transparent 24%),
-    radial-gradient(circle at 90% 0%, #d6f8f2 0%, transparent 28%),
-    var(--bg);
+    radial-gradient(circle at 90% 0%, #d6f8f2 0%, transparent 28%), var(--bg);
   color: var(--ink);
 }
 
@@ -192,7 +191,9 @@ button {
   padding: 10px 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 button:hover {

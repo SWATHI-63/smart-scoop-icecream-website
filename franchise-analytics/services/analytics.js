@@ -164,7 +164,8 @@ export async function upsertMetricForMonth(client, franchiseId, metricMonth) {
 
   const monthlyExpenses = variableExpenses + rentCost;
   const monthlyProfit = revenue - monthlyExpenses;
-  const roi = initialInvestment > 0 ? (monthlyProfit / initialInvestment) * 100 : 0;
+  const roi =
+    initialInvestment > 0 ? (monthlyProfit / initialInvestment) * 100 : 0;
 
   const upsertSql = `
     INSERT INTO analytics_metrics (
@@ -199,6 +200,8 @@ export async function upsertMetricForMonth(client, franchiseId, metricMonth) {
 }
 
 export async function getFranchiseById(franchiseId) {
-  const { rows } = await query("SELECT * FROM franchises WHERE id = $1", [franchiseId]);
+  const { rows } = await query("SELECT * FROM franchises WHERE id = $1", [
+    franchiseId,
+  ]);
   return rows[0] || null;
 }
