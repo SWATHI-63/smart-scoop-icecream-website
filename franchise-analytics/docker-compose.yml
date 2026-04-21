@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: franchise_analytics_db
+    environment:
+      POSTGRES_DB: franchise_analytics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d franchise_analytics"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - franchise_analytics_pgdata:/var/lib/postgresql/data
+
+volumes:
+  franchise_analytics_pgdata:

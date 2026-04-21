@@ -330,6 +330,7 @@
 <a href="#review-section">Review</a>
 <a href="blog.html">Blogs</a>
 <a href="privacy.html">Privacy Policy</a>
+<a href="http://localhost:4000" target="_blank" rel="noopener">Franchise Analysis</a>
 <a href="#" id="my-order-btn">My Orders</a>
 </nav>
 
@@ -1110,8 +1111,9 @@ document.addEventListener('click', function (event) {
           <div class="loading">Loading health data</div>
         </div>
 
+        <script>
       // User lookup by flavor name
-      function lookupFlavor() {
+      async function lookupFlavor() {
         const input = document.getElementById('flavor-lookup-input');
         const query = input.value.trim();
         const resultsDiv = document.getElementById('flavor-lookup-results');
@@ -1119,8 +1121,10 @@ document.addEventListener('click', function (event) {
           resultsDiv.innerHTML = '<p style="color: #888;">Please enter a flavor name.</p>';
           return;
         }
+        await healthAnalyzer.ready;
         if (!healthAnalyzer.healthData) {
-          resultsDiv.innerHTML = '<p class="error">Unable to load health data. Please refresh the page.</p>';
+          const message = healthAnalyzer.loadError || 'Unable to load health data. Please refresh the page.';
+          resultsDiv.innerHTML = `<p class="error">${message}</p>`;
           return;
         }
         const matches = healthAnalyzer.lookupByFlavorName(query);
@@ -1155,6 +1159,7 @@ document.addEventListener('click', function (event) {
           });
         }
       });
+        </script>
     </div>
 </section>
 
@@ -1187,11 +1192,11 @@ document.addEventListener('click', function (event) {
         const resultsContainer = document.getElementById('health-results');
         resultsContainer.innerHTML = '<div class="loading">Analyzing...</div>';
 
-        // Wait for health analyzer to load
-        await new Promise(resolve => setTimeout(resolve, 500));
+      await healthAnalyzer.ready;
 
-        if (!healthAnalyzer.healthData) {
-            resultsContainer.innerHTML = '<p class="error">Unable to load health data. Please refresh the page.</p>';
+      if (!healthAnalyzer.healthData) {
+        const message = healthAnalyzer.loadError || 'Unable to load health data. Please refresh the page.';
+        resultsContainer.innerHTML = `<p class="error">${message}</p>`;
             return;
         }
 
@@ -1232,7 +1237,7 @@ document.addEventListener('click', function (event) {
         const resultsContainer = document.getElementById('health-results');
         resultsContainer.innerHTML = '<div class="loading">Analyzing...</div>';
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await healthAnalyzer.ready;
 
         const safeOptions = healthAnalyzer.checkMultipleAllergens(selectedAllergies);
 
@@ -1887,6 +1892,18 @@ document.addEventListener('click', function (event) {
   </script>
 <!--Review adding section ended here-->
 <br>
+
+<!-- Franchise Analytics Section Starts Here -->
+<section class="franchise-analytics" id="franchise-analytics" style="text-align: center; padding: 40px 16px;">
+  <h2 style="font-size: 2rem; margin-bottom: 10px;">Franchise Profit and Expansion Analysis</h2>
+  <p style="max-width: 760px; margin: 0 auto 18px; color: #444; font-size: 1.05rem;">
+    Explore branch-level profit and loss, visualize performance trends, and get expansion recommendations from the analytics dashboard.
+  </p>
+  <a href="franchise-analytics/public/index.html" target="_blank" style="display: inline-block; padding: 12px 28px; border-radius: 10px; background: linear-gradient(90deg, #2c7df7, #00b6b1); color: #fff; text-decoration: none; font-weight: 700;">
+    Open Franchise Analytics Dashboard
+  </a>
+</section>
+<!-- Franchise Analytics Section Ends Here -->
 
 
 <!-- Footer Section Starts Here -->

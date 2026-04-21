@@ -2,15 +2,66 @@
 class HealthAnalyzer {
   constructor() {
     this.healthData = null;
-    this.loadHealthData();
+    this.loadError = null;
+    this.ready = this.loadHealthData();
+  }
+
+  normalizeHealthData(rawData) {
+    if (!rawData || !Array.isArray(rawData.healthData)) {
+      throw new Error("Health data format is invalid.");
+    }
+
+    const normalizedItems = rawData.healthData
+      .map((item) => ({
+        ...item,
+        flavor_name: item.flavor_name || item.flavour || "",
+        calories_per_serving: Number(
+          item.calories_per_serving ?? item.calories ?? 0,
+        ),
+        fat_g_per_serving: Number(item.fat_g_per_serving ?? item.fat_g ?? 0),
+        sugar_g_per_serving: Number(
+          item.sugar_g_per_serving ?? item.sugar_g ?? 0,
+        ),
+        allergens: Array.isArray(item.allergens)
+          ? item.allergens.join(", ")
+          : item.allergens || "",
+        category: item.category || "Classic",
+        health_risk: item.health_risk || "Consume in moderation",
+        ingredients: item.ingredients || "Ingredients data not available",
+        description: item.description || "",
+      }))
+      .filter((item) => item.flavor_name);
+
+    return {
+      ...rawData,
+      healthData: normalizedItems,
+    };
   }
 
   async loadHealthData() {
     try {
-      const response = await fetch("icecream-health-data-large.json");
-      this.healthData = await response.json();
+      this.loadError = null;
+      const response = await fetch("./icecream-health-data-large.json");
+      if (!response.ok) {
+        throw new Error(`Health data request failed: ${response.status}`);
+      }
+      const rawData = await response.json();
+      this.healthData = this.normalizeHealthData(rawData);
     } catch (error) {
       console.error("Error loading health data:", error);
+      this.loadError = error.message || "Failed to load health data.";
+      try {
+        const fallback = await fetch("./icecream-health-data.json");
+        if (!fallback.ok) {
+          throw new Error(`Fallback request failed: ${fallback.status}`);
+        }
+        const fallbackData = await fallback.json();
+        this.healthData = this.normalizeHealthData(fallbackData);
+        this.loadError = null;
+      } catch (fallbackError) {
+        console.error("Error loading fallback health data:", fallbackError);
+        this.loadError = fallbackError.message || "Failed to load health data.";
+      }
     }
   }
 
@@ -20,8 +71,9 @@ class HealthAnalyzer {
       return { error: "Health data not loaded" };
     }
 
+    const flavorQuery = (flavour || "").toLowerCase();
     const iceCream = this.healthData.healthData.find(
-      (item) => item.flavor_name.toLowerCase() === flavour.toLowerCase(),
+      (item) => (item.flavor_name || "").toLowerCase() === flavorQuery,
     );
 
     if (!iceCream) {
@@ -142,7 +194,7 @@ class HealthAnalyzer {
     const q = query.trim().toLowerCase();
     if (!q) return [];
     return this.healthData.healthData.filter((item) =>
-      item.flavor_name.toLowerCase().includes(q),
+      (item.flavor_name || "").toLowerCase().includes(q),
     );
   }
 }
